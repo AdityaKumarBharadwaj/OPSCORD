@@ -18,11 +18,22 @@ export type AnalysisResult = {
   error?: string;
   data?: {
     wrongCodeSnippet: string;
+    suggestedFixDiff: string;
     riskScore: number;
     timeline: string;
     steps: string[];
     explanation: string;
+    complexityScore: number;
+    impactRadius: string[];
+    fileName: string;
+    fixedFileContent: string;
+    securityReport: string;
+    performanceReport: string;
+    architectureReport: string;
+    suggestedTestCode?: string;
+    suggestedTestFileName?: string;
   };
+  repoContext?: { owner: string; repo: string; branch: string };
 };
 
 export async function analyzeCode(githubUrl: string): Promise<AnalysisResult> {
@@ -37,6 +48,9 @@ export async function analyzeCode(githubUrl: string): Promise<AnalysisResult> {
 
   try {
     let codeData = "";
+    let commitHistoryContext = "";
+    let packageJsonContext = "";
+    let repoContextData: { owner: string, repo: string, branch: string } | undefined;
 
     if (githubUrl.includes("github.com") && githubUrl.includes("/blob/")) {
       const rawUrl = githubUrl
@@ -59,15 +73,31 @@ export async function analyzeCode(githubUrl: string): Promise<AnalysisResult> {
         if (!repoRes.ok) throw new Error("Failed to fetch repository details. Make sure it's public.");
         const repoJson = await repoRes.json();
         const defaultBranch = repoJson.default_branch || "main";
+        
+        repoContextData = { owner, repo, branch: defaultBranch };
+
+        // 1.5 Fetch commit history for context
+        const historyRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/commits?per_page=3`, { headers });
+        if (historyRes.ok) {
+           const historyJson = await historyRes.json();
+           commitHistoryContext = historyJson.map((c: { commit: { message: string, author: { date: string } } }) => `- ${c.commit.message} (${c.commit.author.date})`).join("\n");
+        }
 
         // 2. Fetch repo tree
         const treeRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/git/trees/${defaultBranch}?recursive=1`, { headers });
         if (!treeRes.ok) throw new Error("Failed to fetch repository files.");
         const treeJson = await treeRes.json();
 
+        // 2.5 Grab package.json if it exists
+        const packageJsonFile = treeJson.tree?.find((f: { path: string }) => f.path === "package.json");
+        if (packageJsonFile) {
+            const pkgRes = await fetch(`https://raw.githubusercontent.com/${owner}/${repo}/${defaultBranch}/package.json`, { headers });
+            if (pkgRes.ok) packageJsonContext = await pkgRes.text();
+        }
+
         // 3. Filter interesting files (get top 5 code files to keep prompt sizes manageable)
         const codeFiles = (treeJson.tree || [])
-          .filter((f: any) => f.type === "blob" && /\.(js|ts|jsx|tsx|py|go|java|c|cpp|cs|php|html|css)$/i.test(f.path))
+          .filter((f: { path: string, type: string }) => f.type === "blob" && /\.(js|ts|jsx|tsx|py|go|java|c|cpp|cs|php|html|css)$/i.test(f.path))
           .slice(0, 5);
 
         if (codeFiles.length === 0) {
@@ -111,6 +141,10 @@ export async function analyzeCode(githubUrl: string): Promise<AnalysisResult> {
               type: SchemaType.STRING,
               description: "The exact snippet of code from the file that contains a bug, bad practice, or vulnerability. Can be multi-line.",
             },
+            suggestedFixDiff: {
+              type: SchemaType.STRING,
+              description: "A unified diff format string showing the exact code changes needed to fix the issue. Use - for removed lines and + for added lines.",
+            },
             riskScore: {
               type: SchemaType.INTEGER,
               description: "A causality risk score from 0 to 100 indicating the severity of the issue.",
@@ -127,23 +161,72 @@ export async function analyzeCode(githubUrl: string): Promise<AnalysisResult> {
             explanation: {
                 type: SchemaType.STRING,
                 description: "A short explanation of WHY the code is wrong.",
+            },
+            complexityScore: {
+                type: SchemaType.INTEGER,
+                description: "A score from 1-100 indicating the cyclomatic and cognitive complexity of the affected code.",
+            },
+            impactRadius: {
+                type: SchemaType.ARRAY,
+                items: { type: SchemaType.STRING },
+                description: "A list of other files or components that might break if this issue is fixed.",
+            },
+            fileName: {
+                type: SchemaType.STRING,
+                description: "The exact relative path of the file containing the bug (e.g. app/page.tsx). It must be one of the files provided in the prompt.",
+            },
+            fixedFileContent: {
+                type: SchemaType.STRING,
+                description: "The COMPLETE content of the file specified in 'fileName' with the issue resolved. Must include all original unaffected code.",
+            },
+            securityReport: {
+                type: SchemaType.STRING,
+                description: "A short report from the perspective of a Senior Security Auditor identifying any exploit vectors.",
+            },
+            performanceReport: {
+                type: SchemaType.STRING,
+                description: "A short report from a Performance Engineer focusing on Big-O efficiency and memory leaks.",
+            },
+            architectureReport: {
+                type: SchemaType.STRING,
+                description: "A short report from an Architecture Lead focusing on DRY principles, typing, and component design.",
+            },
+            suggestedTestCode: {
+                type: SchemaType.STRING,
+                description: "A complete suite of Unit Tests (e.g. Jest, Vitest, or pytest) that verifies the bug is fixed and handles edge cases.",
+            },
+            suggestedTestFileName: {
+                type: SchemaType.STRING,
+                description: "The appropriate filename for the unit test (e.g., 'app/page.test.tsx' or 'utils_test.py').",
             }
           },
-          required: ["wrongCodeSnippet", "riskScore", "timeline", "steps", "explanation"],
+          required: ["wrongCodeSnippet", "suggestedFixDiff", "riskScore", "timeline", "steps", "explanation", "complexityScore", "impactRadius", "fileName", "fixedFileContent", "securityReport", "performanceReport", "architectureReport"],
         },
       },
     });
 
     const prompt = `
-      You are an expert DevOps and Security Code Analyzer for the OpsCord platform.
-      Analyze the following source code and find the most critical bug, security vulnerability, or bad practice.
+      You are the OpsCord Multi-Agent Swarm (Security, Performance, and Architecture).
+      Analyze the following source code collaboratively.
+
+      Provide your findings exactly matching the JSON schema.
+      1. Ensure 'suggestedFixDiff' and 'fixedFileContent' fix the most critical unified issue.
+      2. Provide a 'suggestedTestCode' file to verify the fix works.
+      3. Supply individual brief reports from your respective persona viewpoints.
       
+      Recent Commit History (for context on regressions):
+      ${commitHistoryContext || "No history available"}
+      
+      Package/Dependencies Context:
+      ${packageJsonContext || "No dependency context available"}
+
       Code to analyze:
       \`\`\`
       ${codeData}
       \`\`\`
       
-      Provide your findings exactly matching the JSON schema requested. If the code is perfect, find the weakest point or a theoretical improvement and give it a low risk score.
+      Provide your findings exactly matching the JSON schema requested.
+      Ensure 'suggestedFixDiff' offers a complete, syntactically correct change for the 'fileName' you specify.
     `;
 
     const result = await model.generateContent(prompt);
@@ -152,9 +235,12 @@ export async function analyzeCode(githubUrl: string): Promise<AnalysisResult> {
     // Parse the structured JSON output
     const data = JSON.parse(responseText);
 
-    return { success: true, data };
-  } catch (error: any) {
-    console.error("Error analyzing code:", error);
-    return { success: false, error: error.message || "An unexpected error occurred." };
+    return { success: true, data, repoContext: repoContextData };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+        console.error("Error analyzing code:", error);
+        return { success: false, error: error.message };
+    }
+    return { success: false, error: "An unexpected error occurred." };
   }
 }
