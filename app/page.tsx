@@ -13,6 +13,9 @@ const CanvasBackground = dynamic(
 const EventFeed = dynamic(() => import("@/components/EventFeed"), {
   ssr: false,
 });
+const ArchitectureDiagram = dynamic(() => import("@/components/ArchitectureDiagram"), {
+  ssr: false,
+});
 
 /* ── Pulsing Dot ──────────────────────────── */
 function PulsingDot({ color = "#ef4444", size = 7 }: { color?: string; size?: number }) {
@@ -205,19 +208,7 @@ export default function LandingPage() {
               ✕
             </button>
             <h3 style={{ fontWeight: 800, fontSize: 20, marginBottom: 16 }}>System Architecture</h3>
-            <div
-              style={{
-                background: "rgba(0,0,0,0.3)",
-                borderRadius: 12,
-                padding: 40,
-                textAlign: "center",
-                border: "1px solid var(--border)",
-              }}
-            >
-              <p style={{ color: "var(--muted)", fontSize: 14 }}>
-                Architecture diagram — drop your PNG at <code style={{ color: "var(--sky)" }}>/public/architecture.png</code>
-              </p>
-            </div>
+            <ArchitectureDiagram />
           </div>
         </div>
       )}
@@ -1064,25 +1055,7 @@ export default function LandingPage() {
             Event-driven microservices. PostgreSQL + Redis + SQS. Express.js REST API.
           </p>
 
-          <div
-            style={{
-              border: "1px solid var(--border)",
-              borderRadius: 16,
-              overflow: "hidden",
-              background: "rgba(0,0,0,0.3)",
-              padding: 40,
-              textAlign: "center",
-              minHeight: 300,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <p style={{ color: "var(--muted)", fontSize: 14 }}>
-              Architecture diagram — drop your PNG at{" "}
-              <code style={{ color: "var(--sky)" }}>/public/architecture.png</code>
-            </p>
-          </div>
+          <ArchitectureDiagram />
 
           <div style={{ display: "flex", justifyContent: "center", gap: 12, marginTop: 24 }}>
             {[
