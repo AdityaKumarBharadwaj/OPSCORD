@@ -3,7 +3,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 
-const Node = ({ x, y, width, height, label, color, icon, sublabel }: any) => (
+const Node = ({ x, y, width, height, label, color, icon, sublabel }: { x: number, y: number, width: number, height: number, label: string, color: string, icon: React.ReactNode, sublabel?: string }) => (
   <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
     <rect
       x={x}
@@ -92,7 +92,7 @@ export default function ArchitectureDiagram() {
         <rect width="1300" height="550" fill="url(#grid)" />
 
         {/* Connections (Lines) */}
-        {flows.map((flow: any, i: number) => (
+        {flows.map((flow: { from: number[], to: number[], duration: number, delay: number, dashed?: boolean }, i: number) => (
           <g key={i}>
             <line
               x1={flow.from[0]}
@@ -123,7 +123,7 @@ export default function ArchitectureDiagram() {
         ))}
 
         {/* INPUT SOURCES */}
-        <text x={20} y={40} fill={mutedColor} fontSize={10} fontWeight={700} fontFamily="var(--font-space-mono)" letterSpacing="0.1em">// INPUT SOURCES</text>
+        <text x={20} y={40} fill={mutedColor} fontSize={10} fontWeight={700} fontFamily="var(--font-space-mono)" letterSpacing="0.1em">{"// INPUT SOURCES"}</text>
         <Node x={20} y={60} width={180} height={70} label="CircleCI Build" sublabel="Build & Deploy Events" color="#00D4AA" icon="◎" />
         <Node x={20} y={150} width={180} height={70} label="GitHub API" sublabel="Push/PR Webhooks" color="#f0883e" icon="⬡" />
         <Node x={20} y={240} width={180} height={70} label="Kubernetes API" sublabel="Pod/HPA Events" color="#326CE5" icon="⎈" />
@@ -154,7 +154,7 @@ export default function ArchitectureDiagram() {
         <Node x={950} y={220} width={150} height={90} label="API Server" sublabel="Express.js REST API" color="#3b82f6" icon="🚀" />
 
         {/* OUTPUT CLIENTS */}
-        <text x={1140} y={40} fill={mutedColor} fontSize={10} fontWeight={700} fontFamily="var(--font-space-mono)" letterSpacing="0.1em">// OUTPUT CLIENTS</text>
+        <text x={1140} y={40} fill={mutedColor} fontSize={10} fontWeight={700} fontFamily="var(--font-space-mono)" letterSpacing="0.1em">{"// OUTPUT CLIENTS"}</text>
         <Node x={1140} y={60} width={140} height={70} label="Mobile App" sublabel="Push Notifications" color="#f1f5f9" icon="📱" />
         <Node x={1140} y={150} width={140} height={70} label="React Dashboard" sublabel="Admin Interface" color="#f1f5f9" icon="💻" />
         <Node x={1140} y={240} width={140} height={70} label="Webhooks API" sublabel="Third-party Integrations" color={primaryColor} icon="🔗" />

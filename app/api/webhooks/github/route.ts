@@ -16,7 +16,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "Ignored PR action." });
     }
 
-    const prUrl = payload.pull_request.html_url;
     const owner = payload.repository.owner.login;
     const repo = payload.repository.name;
     const prNumber = payload.pull_request.number;
@@ -71,8 +70,8 @@ export async function POST(req: Request) {
     }
 
     return NextResponse.json({ success: true, message: "Analyzed and commented!" });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Webhook processing error:", error);
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: (error as Error).message }, { status: 500 });
   }
 }

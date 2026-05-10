@@ -19,7 +19,7 @@ const LOGS = [
 ];
 
 export default function SwarmActivity() {
-  const [activeLogs, setActiveLogs] = useState<any[]>([]);
+  const [activeLogs, setActiveLogs] = useState<{ agent: string; msg: string; status: string }[]>([]);
 
   useEffect(() => {
     let i = 0;

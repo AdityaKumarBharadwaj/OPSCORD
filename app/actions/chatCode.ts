@@ -1,9 +1,8 @@
 "use server";
 
-import { GoogleGenerativeAI } from "@google/generative-ai";
+
 
 const apiKey = process.env.GEMINI_API_KEY;
-const genAI = new GoogleGenerativeAI(apiKey || "");
 const MODEL_NAME = "gemini-2.5-flash";
 
 export type ChatMessage = {
@@ -64,8 +63,8 @@ export async function chatCode(
     const responseText = data.candidates?.[0]?.content?.parts?.[0]?.text || "No response generated.";
 
     return { success: true, response: responseText };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error in chatCode REST:", error);
-    return { success: false, error: error.message || "Chat failed" };
+    return { success: false, error: (error as Error).message || "Chat failed" };
   }
 }

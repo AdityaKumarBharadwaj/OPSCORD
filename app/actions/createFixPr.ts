@@ -60,7 +60,7 @@ export async function createFixPr({
       return data.sha;
     };
 
-    const treeData: any[] = [
+    const treeData: Record<string, unknown>[] = [
       { path: fileName, mode: "100644", type: "blob", sha: await postBlob(fixedFileContent) }
     ];
 
@@ -105,7 +105,7 @@ export async function createFixPr({
     const prData = await prRes.json();
 
     return { success: true, prUrl: prData.html_url };
-  } catch (error: any) {
-    return { success: false, error: error.message || "Failed to create PR" };
+  } catch (error: unknown) {
+    return { success: false, error: (error as Error).message || "Failed to create PR" };
   }
 }
