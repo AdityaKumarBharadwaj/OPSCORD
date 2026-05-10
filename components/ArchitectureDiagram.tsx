@@ -3,6 +3,42 @@
 import React from "react";
 import { motion } from "framer-motion";
 
+const Node = ({ x, y, width, height, label, color, icon, sublabel }: any) => (
+  <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
+    <rect
+      x={x}
+      y={y}
+      width={width}
+      height={height}
+      rx={12}
+      fill={color + "11"}
+      stroke={color + "44"}
+      strokeWidth={1.5}
+    />
+    <text
+      x={x + 16}
+      y={y + 28}
+      fill={color}
+      fontSize={13}
+      fontWeight={800}
+      fontFamily="var(--font-space-mono)"
+    >
+      {icon} {label}
+    </text>
+    {sublabel && (
+      <text
+        x={x + 16}
+        y={y + 46}
+        fill="#64748b"
+        fontSize={10}
+        fontFamily="var(--font-space-mono)"
+      >
+        {sublabel}
+      </text>
+    )}
+  </motion.g>
+);
+
 export default function ArchitectureDiagram() {
   const primaryColor = "#3b82f6"; // Blue
   const secondaryColor = "#7c3aed"; // Violet
@@ -39,42 +75,6 @@ export default function ArchitectureDiagram() {
     { from: [1050, 250], to: [1150, 450], duration: 3, delay: 0.4 },
   ];
 
-  const Node = ({ x, y, width, height, label, color, icon, sublabel }: any) => (
-    <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
-      <rect
-        x={x}
-        y={y}
-        width={width}
-        height={height}
-        rx={12}
-        fill={color + "11"}
-        stroke={color + "44"}
-        strokeWidth={1.5}
-      />
-      <text
-        x={x + 16}
-        y={y + 28}
-        fill={color}
-        fontSize={14}
-        fontWeight={800}
-        fontFamily="var(--font-space-mono)"
-      >
-        {icon} {label}
-      </text>
-      {sublabel && (
-        <text
-          x={x + 16}
-          y={y + 48}
-          fill="var(--muted)"
-          fontSize={11}
-          fontFamily="var(--font-space-mono)"
-        >
-          {sublabel}
-        </text>
-      )}
-    </motion.g>
-  );
-
   return (
     <div style={{ width: "100%", overflowX: "auto", background: "rgba(0,0,0,0.2)", borderRadius: 16 }}>
       <svg
@@ -92,7 +92,7 @@ export default function ArchitectureDiagram() {
         <rect width="1300" height="550" fill="url(#grid)" />
 
         {/* Connections (Lines) */}
-        {flows.map((flow, i) => (
+        {flows.map((flow: any, i: number) => (
           <g key={i}>
             <line
               x1={flow.from[0]}
@@ -123,42 +123,42 @@ export default function ArchitectureDiagram() {
         ))}
 
         {/* INPUT SOURCES */}
-        <text x="20" y="40" fill={mutedColor} fontSize={10} fontWeight={700} fontFamily="var(--font-space-mono)" letterSpacing="0.1em">// INPUT SOURCES</text>
-        <Node x="20" y="60" width="180" height="70" label="CircleCI Build" sublabel="Build & Deploy Events" color="#00D4AA" icon="◎" />
-        <Node x="20" y="150" width="180" height="70" label="GitHub API" sublabel="Push/PR Webhooks" color="#f0883e" icon="⬡" />
-        <Node x="20" y="240" width="180" height="70" label="Kubernetes API" sublabel="Pod/HPA Events" color="#326CE5" icon="⎈" />
-        <Node x="20" y="330" width="180" height="70" label="Datadog Metrics" sublabel="Health Anomaly Polling" color="#a78bfa" icon="◈" />
+        <text x={20} y={40} fill={mutedColor} fontSize={10} fontWeight={700} fontFamily="var(--font-space-mono)" letterSpacing="0.1em">// INPUT SOURCES</text>
+        <Node x={20} y={60} width={180} height={70} label="CircleCI Build" sublabel="Build & Deploy Events" color="#00D4AA" icon="◎" />
+        <Node x={20} y={150} width={180} height={70} label="GitHub API" sublabel="Push/PR Webhooks" color="#f0883e" icon="⬡" />
+        <Node x={20} y={240} width={180} height={70} label="Kubernetes API" sublabel="Pod/HPA Events" color="#326CE5" icon="⎈" />
+        <Node x={20} y={330} width={180} height={70} label="Datadog Metrics" sublabel="Health Anomaly Polling" color="#a78bfa" icon="◈" />
 
         {/* EVENT INGESTION */}
-        <rect x="230" y="140" width="180" height="160" rx={16} fill="rgba(59,130,246,0.03)" stroke="rgba(59,130,246,0.15)" strokeWidth={1} />
-        <text x="245" y="165" fill={primaryColor} fontSize={10} fontWeight={700} fontFamily="var(--font-space-mono)" letterSpacing="0.1em">EVENT INGESTION</text>
-        <Node x="245" y="185" width="150" height="90" label="Webhook Rx" sublabel="Express.js / Node.js" color={primaryColor} icon="📥" />
+        <rect x={230} y={140} width={180} height={160} rx={16} fill="rgba(59,130,246,0.03)" stroke="rgba(59,130,246,0.15)" strokeWidth={1} />
+        <text x={245} y={165} fill={primaryColor} fontSize={10} fontWeight={700} fontFamily="var(--font-space-mono)" letterSpacing="0.1em">EVENT INGESTION</text>
+        <Node x={245} y={185} width={150} height={90} label="Webhook Rx" sublabel="Express.js / Node.js" color={primaryColor} icon="📥" />
         
-        <Node x="245" y="415" width="150" height="70" label="Event Processor" sublabel="Redis-backed De-dupe" color={primaryColor} icon="⚙️" />
+        <Node x={245} y={415} width={150} height={70} label="Event Processor" sublabel="Redis-backed De-dupe" color={primaryColor} icon="⚙️" />
 
         {/* CORE PROCESSING */}
-        <rect x="480" y="100" width="180" height="300" rx={16} fill="rgba(124,58,237,0.03)" stroke="rgba(124,58,237,0.15)" strokeWidth={1} />
-        <text x="495" y="125" fill={secondaryColor} fontSize={10} fontWeight={700} fontFamily="var(--font-space-mono)" letterSpacing="0.1em">CORE PROCESSING</text>
-        <Node x="495" y="145" width="150" height="70" label="Causality Engine" sublabel="AI Scoring Model" color={secondaryColor} icon="🧠" />
-        <Node x="495" y="235" width="150" height="70" label="Ingestion Service" sublabel="Parallel Swarm Analysis" color={secondaryColor} icon="⚡" />
-        <Node x="495" y="315" width="150" height="70" label="Results Processor" sublabel="Impact Mapping" color={secondaryColor} icon="🔍" />
+        <rect x={480} y={100} width={180} height={300} rx={16} fill="rgba(124,58,237,0.03)" stroke="rgba(124,58,237,0.15)" strokeWidth={1} />
+        <text x={495} y={125} fill={secondaryColor} fontSize={10} fontWeight={700} fontFamily="var(--font-space-mono)" letterSpacing="0.1em">CORE PROCESSING</text>
+        <Node x={495} y={145} width={150} height={70} label="Causality Engine" sublabel="AI Scoring Model" color={secondaryColor} icon="🧠" />
+        <Node x={495} y={235} width={150} height={70} label="Ingestion Service" sublabel="Parallel Swarm Analysis" color={secondaryColor} icon="⚡" />
+        <Node x={495} y={315} width={150} height={70} label="Results Processor" sublabel="Impact Mapping" color={secondaryColor} icon="🔍" />
 
         {/* DATA STORAGE */}
-        <rect x="730" y="80" width="150" height="360" rx={16} fill="rgba(16,185,129,0.03)" stroke="rgba(16,185,129,0.15)" strokeWidth={1} />
-        <text x="745" y="105" fill={accentColor} fontSize={10} fontWeight={700} fontFamily="var(--font-space-mono)" letterSpacing="0.1em">DATA STORAGE</text>
-        <Node x="745" y="125" width="120" height="70" label="PostgreSQL" sublabel="Incident Records" color={accentColor} icon="DB" />
-        <Node x="745" y="225" width="120" height="70" label="Redis" sublabel="Hot Event Cache" color={dangerColor} icon="CD" />
-        <Node x="745" y="325" width="120" height="70" label="SQS Queue" sublabel="Async Jobs" color={warningColor} icon="SQ" />
+        <rect x={730} y={80} width={150} height={360} rx={16} fill="rgba(16,185,129,0.03)" stroke="rgba(16,185,129,0.15)" strokeWidth={1} />
+        <text x={745} y={105} fill={accentColor} fontSize={10} fontWeight={700} fontFamily="var(--font-space-mono)" letterSpacing="0.1em">DATA STORAGE</text>
+        <Node x={745} y={125} width={120} height={70} label="PostgreSQL" sublabel="Incident Records" color={accentColor} icon="DB" />
+        <Node x={745} y={225} width={120} height={70} label="Redis" sublabel="Hot Event Cache" color={dangerColor} icon="CD" />
+        <Node x={745} y={325} width={120} height={70} label="SQS Queue" sublabel="Async Jobs" color={warningColor} icon="SQ" />
 
         {/* API SERVER */}
-        <Node x="950" y="220" width="150" height="90" label="API Server" sublabel="Express.js REST API" color="#3b82f6" icon="🚀" />
+        <Node x={950} y={220} width={150} height={90} label="API Server" sublabel="Express.js REST API" color="#3b82f6" icon="🚀" />
 
         {/* OUTPUT CLIENTS */}
-        <text x="1140" y="40" fill={mutedColor} fontSize={10} fontWeight={700} fontFamily="var(--font-space-mono)" letterSpacing="0.1em">// OUTPUT CLIENTS</text>
-        <Node x="1140" y="60" width="140" height="70" label="Mobile App" sublabel="Push Notifications" color="#f1f5f9" icon="📱" />
-        <Node x="1140" y="150" width="140" height="70" label="React Dashboard" sublabel="Admin Interface" color="#f1f5f9" icon="💻" />
-        <Node x="1140" y="240" width="140" height="70" label="Webhooks API" sublabel="Third-party Integrations" color={primaryColor} icon="🔗" />
-        <Node x="1140" y="410" width="140" height="70" label="Slack Bot" sublabel="Instant Root Cause" color="#4A154B" icon="💬" />
+        <text x={1140} y={40} fill={mutedColor} fontSize={10} fontWeight={700} fontFamily="var(--font-space-mono)" letterSpacing="0.1em">// OUTPUT CLIENTS</text>
+        <Node x={1140} y={60} width={140} height={70} label="Mobile App" sublabel="Push Notifications" color="#f1f5f9" icon="📱" />
+        <Node x={1140} y={150} width={140} height={70} label="React Dashboard" sublabel="Admin Interface" color="#f1f5f9" icon="💻" />
+        <Node x={1140} y={240} width={140} height={70} label="Webhooks API" sublabel="Third-party Integrations" color={primaryColor} icon="🔗" />
+        <Node x={1140} y={410} width={140} height={70} label="Slack Bot" sublabel="Instant Root Cause" color="#4A154B" icon="💬" />
 
         {/* LEGEND */}
         <g transform="translate(1000, 500)">
