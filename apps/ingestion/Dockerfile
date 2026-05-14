@@ -5,17 +5,20 @@
 # ── Stage 1: Dependencies ───────────────
 FROM node:20-alpine AS deps
 WORKDIR /app
+
+# Copy all workspace package.json files for npm ci
 COPY package.json package-lock.json ./
+COPY apps/api/package.json ./apps/api/
 COPY apps/ingestion/package.json ./apps/ingestion/
+COPY apps/web/package.json ./apps/web/
 COPY packages/db/package.json ./packages/db/
-RUN npm ci --workspace=@opscord/ingestion --workspace=@opscord/db --include-workspace-root
+
+RUN npm ci
 
 # ── Stage 2: Build ──────────────────────
 FROM node:20-alpine AS build
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/apps/ingestion/node_modules ./apps/ingestion/node_modules
-COPY --from=deps /app/packages/db/node_modules ./packages/db/node_modules
 COPY . .
 RUN npx prisma generate --schema=packages/db/prisma/schema.prisma
 WORKDIR /app/apps/ingestion
