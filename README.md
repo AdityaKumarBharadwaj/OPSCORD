@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/probably-ABHINAV/OPSCORD/main/public/logo.png" alt="OPSCORD Logo" width="120" />
+  <img src="./public/logo.png" alt="OPSCORD Logo" width="120" />
   <br/>
   <h1>⚡ OPSCORD ⚡</h1>
   <p><b>Stop Firefighting. Start Understanding.</b></p>
